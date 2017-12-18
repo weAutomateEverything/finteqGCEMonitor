@@ -1,0 +1,20 @@
+language: go
+go:
+- master
+
+env:
+  global:
+      - CGO_ENABLED=0
+addons:
+  artifacts: true
+sudo: false
+services:
+ - docker
+
+script:
+ - go test -v ./...
+ - go build
+
+after_success:
+  - bin/docker_push.sh
+  - bin/ecs-deploy.sh
