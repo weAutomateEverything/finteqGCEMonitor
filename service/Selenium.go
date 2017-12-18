@@ -15,17 +15,17 @@ type alertMessage struct {
 }
 
 type inwardService struct {
-	service,subservice,destination,status string
+	service, subservice, destination, status string
 }
 
-func DoSelenium(){
+func DoSelenium() {
 	var webDriver selenium.WebDriver
 	var err error
 	caps := selenium.Capabilities(map[string]interface{}{"browserName": "chrome"})
 	caps["chrome.switches"] = []string{"--ignore-certificate-errors"}
 
 	if webDriver, err = selenium.NewRemote(caps, seleniumServer()); err != nil {
-		handleSeleniumError(err,nil)
+		handleSeleniumError(err, nil)
 		return
 	}
 
@@ -36,45 +36,65 @@ func DoSelenium(){
 		handleSeleniumError(err, webDriver)
 	}
 
-	webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
-		elem, err := wb.FindElement(selenium.ByPartialLinkText,"Service Options")
+	log.Println("waiting for laoding to close")
+	err = webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
+		elem, err := wb.FindElement(selenium.ByID, "ModalCalLabel")
+		if err != nil {
+			return true, nil
+		}
+		r, err := elem.IsDisplayed()
+		log.Printf("Display Status: %v, err: %v",r,err)
+		return !r, nil
+	})
+
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return
+	}
+
+	log.Println("Loading screen clear... Proceeding... ")
+
+	err = webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
+		elem, err := wb.FindElement(selenium.ByPartialLinkText, "Service Options")
 		if err != nil {
 			return false, nil
 		}
 		return elem.IsDisplayed()
 	})
 
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return
+	}
+
+	log.Println("Doing inward checks")
 	doInwardCheck(webDriver)
 
 }
 
-
-
-
-
 func handleSeleniumError(err error, driver selenium.WebDriver) {
 	if driver == nil {
-		sendError(err.Error(),nil)
+		sendError(err.Error(), nil)
 		return
 	}
 	bytes, error := driver.Screenshot()
 	if error != nil {
 		// Couldnt get a screenshot - lets end the original error
-		sendError(err.Error(),nil)
+		sendError(err.Error(), nil)
 		return
 	}
-	sendError(err.Error(),bytes)
+	sendError(err.Error(), bytes)
 }
 
-func sendError(message string, image []byte){
-	a := alertMessage{Message:message}
+func sendError(message string, image []byte) {
+	a := alertMessage{Message: message}
 	if image != nil {
 		a.Image = base64.StdEncoding.EncodeToString(image)
 	}
 
-	request, _  := json.Marshal(a)
+	request, _ := json.Marshal(a)
 
-	response, err := http.Post(errorEndpoint(),"application/json",bytes.NewReader(request))
+	response, err := http.Post(errorEndpoint(), "application/json", bytes.NewReader(request))
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -83,7 +103,7 @@ func sendError(message string, image []byte){
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		log. Println(ioutil.ReadAll(response.Body))
+		log.Println(ioutil.ReadAll(response.Body))
 	}
 
 }
