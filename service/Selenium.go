@@ -66,6 +66,7 @@ func doSelenium() {
 	checkServices(webDriver,true)
 	checkServices(webDriver,false)
 	doCheck(webDriver,false)
+	doCheck(webDriver,true)
 
 
 }
