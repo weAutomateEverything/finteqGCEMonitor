@@ -8,24 +8,42 @@ import (
 	"bytes"
 	"log"
 	"io/ioutil"
+	"time"
+	"runtime/debug"
+	"os"
 )
 
 type alertMessage struct {
 	Message, Image string
+	internalError bool
 }
 
 type inwardService struct {
-	service,subservice,destination,status string
+	service, subservice, destination, status string
 }
 
-func DoSelenium(){
+func init(){
+	go func() {
+		monitor()
+	}()
+
+}
+
+func monitor(){
+	for true {
+		doSelenium()
+		time.Sleep(10 * time.Minute)
+	}
+}
+
+func doSelenium() {
 	var webDriver selenium.WebDriver
 	var err error
 	caps := selenium.Capabilities(map[string]interface{}{"browserName": "chrome"})
 	caps["chrome.switches"] = []string{"--ignore-certificate-errors"}
 
 	if webDriver, err = selenium.NewRemote(caps, seleniumServer()); err != nil {
-		handleSeleniumError(err,nil)
+		handleSeleniumError(err, nil)
 		return
 	}
 
@@ -36,45 +54,58 @@ func DoSelenium(){
 		handleSeleniumError(err, webDriver)
 	}
 
-	webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
-		elem, err := wb.FindElement(selenium.ByPartialLinkText,"Service Options")
-		if err != nil {
-			return false, nil
-		}
-		return elem.IsDisplayed()
-	})
 
-	doInwardCheck(webDriver)
+	err = waitForWaitFor(webDriver)
+
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return
+	}
+
+
+	checkServices(webDriver,true)
+	checkServices(webDriver,false)
+	doCheck(webDriver,false)
+	doCheck(webDriver,true)
+
 
 }
 
-
-
-
+func waitForWaitFor(webDriver selenium.WebDriver) error {
+	return webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
+		elem, err := wb.FindElement(selenium.ByID, "ModalCalLabel")
+		if err != nil {
+			return true, nil
+		}
+		r, err := elem.IsDisplayed()
+		return !r, nil
+	})
+}
 
 func handleSeleniumError(err error, driver selenium.WebDriver) {
+	debug.PrintStack()
 	if driver == nil {
-		sendError(err.Error(),nil)
+		sendError(err.Error(), nil, true)
 		return
 	}
 	bytes, error := driver.Screenshot()
 	if error != nil {
 		// Couldnt get a screenshot - lets end the original error
-		sendError(err.Error(),nil)
+		sendError(err.Error(), nil, true)
 		return
 	}
-	sendError(err.Error(),bytes)
+	sendError(err.Error(), bytes, true)
 }
 
-func sendError(message string, image []byte){
-	a := alertMessage{Message:message}
+func sendError(message string, image []byte, internalError bool) {
+	a := alertMessage{Message: message, internalError:internalError}
 	if image != nil {
 		a.Image = base64.StdEncoding.EncodeToString(image)
 	}
 
-	request, _  := json.Marshal(a)
+	request, _ := json.Marshal(a)
 
-	response, err := http.Post(errorEndpoint(),"application/json",bytes.NewReader(request))
+	response, err := http.Post(errorEndpoint(), "application/json", bytes.NewReader(request))
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -83,19 +114,19 @@ func sendError(message string, image []byte){
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		log. Println(ioutil.ReadAll(response.Body))
+		log.Println(ioutil.ReadAll(response.Body))
 	}
 
 }
 
 func endpoint() string {
-	return "http://c1592023:trendweb@10.187.5.61/GCEControlCentre/MonitorOutwardServices.aspx"
+	return os.Getenv("GCE_ENDPOINT")
 }
 
 func seleniumServer() string {
-	return "http://card-devops-selenium-service.legion.sbsa.local/wd/hub"
+	return os.Getenv("SELENIUM_SERVER")
 }
 
 func errorEndpoint() string {
-	return "http://localhost:8000/alert/image"
+	return os.Getenv("HAL_ENDPOINT")
 }

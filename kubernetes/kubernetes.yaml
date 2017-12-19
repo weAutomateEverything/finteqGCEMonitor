@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gce-config
+  labels:
+    name: gce-config
+data:
+  SELENIUM_SERVER: ""
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: gce-monitor
+  name: gce-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gce-monitor
+  template:
+    metadata:
+      labels:
+        app: gce-monitor
+    spec:
+      containers:
+      - image: zamedic/gce-monitor:1.1.1
+        name: gce-monitor
+        ports:
+        - containerPort: 8001
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: hal-config
+        - configMapRef:
+            name: gce-config
+        - secretRef:
+            name: hal-secrets
+        - secretRef:
+            name: gce-secrets
+        env:
+        - name: HAL_ENDPOINT
+          value: ""
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: gce-monitor-service
+spec:
+  selector:
+    app: gce-monitor
+  ports:
+  - protocol: TCP
+    name: http
+    port: 80
+    targetPort: 8001
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gce-monitor-ingress
+  annotations:
+    kubernetes.io/ingress.class: istio
+spec:
+  rules:
+  - host: gce-monitor.legion.sbsa.local
+    http:
+      paths:
+      - backend:
+          serviceName: gce-monitor-serviceebook
+          servicePort: http
+

@@ -17,4 +17,3 @@ script:
 
 after_success:
   - bin/docker_push.sh
-  - bin/ecs-deploy.sh
