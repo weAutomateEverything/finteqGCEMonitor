@@ -8,17 +8,34 @@ import (
 	"bytes"
 	"log"
 	"io/ioutil"
+	"time"
+	"runtime/debug"
 )
 
 type alertMessage struct {
 	Message, Image string
+	internalError bool
 }
 
 type inwardService struct {
 	service, subservice, destination, status string
 }
 
-func DoSelenium() {
+func init(){
+	go func() {
+		monitor()
+	}()
+
+}
+
+func monitor(){
+	for true {
+		doSelenium()
+		time.Sleep(10 * time.Minute)
+	}
+}
+
+func doSelenium() {
 	var webDriver selenium.WebDriver
 	var err error
 	caps := selenium.Capabilities(map[string]interface{}{"browserName": "chrome"})
@@ -45,9 +62,10 @@ func DoSelenium() {
 	}
 
 
+	checkServices(webDriver,true)
+	checkServices(webDriver,false)
+	doCheck(webDriver,false)
 
-	doInwardCheck(webDriver)
-	checkServices(webDriver)
 
 }
 
@@ -63,21 +81,22 @@ func waitForWaitFor(webDriver selenium.WebDriver) error {
 }
 
 func handleSeleniumError(err error, driver selenium.WebDriver) {
+	debug.PrintStack()
 	if driver == nil {
-		sendError(err.Error(), nil)
+		sendError(err.Error(), nil, true)
 		return
 	}
 	bytes, error := driver.Screenshot()
 	if error != nil {
 		// Couldnt get a screenshot - lets end the original error
-		sendError(err.Error(), nil)
+		sendError(err.Error(), nil, true)
 		return
 	}
-	sendError(err.Error(), bytes)
+	sendError(err.Error(), bytes, true)
 }
 
-func sendError(message string, image []byte) {
-	a := alertMessage{Message: message}
+func sendError(message string, image []byte, internalError bool) {
+	a := alertMessage{Message: message, internalError:internalError}
 	if image != nil {
 		a.Image = base64.StdEncoding.EncodeToString(image)
 	}

@@ -11,11 +11,10 @@ import (
 	"log"
 )
 
-var sodOk = map[string]struct{}{"SOD : ACK RECEIVED":{},"SERVICE READY FOR SOD":{}}
+var sodOk = map[string]struct{}{"SOD : ACK RECEIVED":{}}
 var eodOk = map[string]struct{}{"EOD : ACK RECEIVED":{}}
-func doInwardCheck(webDriver selenium.WebDriver) {
-	v := getInwardData(webDriver)
-	log.Printf("All Data Received - checking Inwards. %v",len(v))
+func doCheck(webDriver selenium.WebDriver, inward bool) {
+	v := getData(webDriver,inward)
 	for _,x := range v {
 		if database.CutoffExists(x.service + x.subservice, x.destination){
 			if database.IsInStartOfDay(x.service + x.subservice, x.destination){
@@ -28,7 +27,6 @@ func doInwardCheck(webDriver selenium.WebDriver) {
 			log.Printf("No records found for service %v, subservice %v",x.service + x.subservice, x.destination)
 		}
 	}
-	log.Println("All Done with inwards")
 }
 
 /*
@@ -61,10 +59,17 @@ func ParseInwardCutttoffTimes(i io.Reader) {
 func parseBlock(service, subservice, sodTime, eodTime, days string) {
 	sodTime = strings.TrimSpace(sodTime)
 	eodTime = strings.TrimSpace(eodTime)
-	days = strings.TrimSpace(days)
+
+
 	if len(sodTime) == 0 {
 		return
 	}
+
+	sodTime = strings.Replace(sodTime,"A ","",1)
+	eodTime = strings.Replace(eodTime,"A ","",1)
+
+	days = strings.TrimSpace(days)
+	days = strings.Replace(days,"(ph)","",-1)
 
 	c := database.CutoffTime{Service: service, SubService: subservice}
 
@@ -93,6 +98,7 @@ func parseBlock(service, subservice, sodTime, eodTime, days string) {
 			database.SaveCutoff(c)
 			i++
 		}
+		return
 	}
 
 	//If its not Monday - Sunday or Monday to Friday, it must be Sat - Sun
@@ -104,7 +110,7 @@ func parseBlock(service, subservice, sodTime, eodTime, days string) {
 	database.SaveCutoff(c)
 }
 
-func getInwardData(webDriver selenium.WebDriver) []inwardService {
+func getData(webDriver selenium.WebDriver, inward bool) []inwardService {
 
 	err := webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
 		elem, err := wb.FindElement(selenium.ByPartialLinkText, "Service Options")
@@ -118,8 +124,6 @@ func getInwardData(webDriver selenium.WebDriver) []inwardService {
 		handleSeleniumError(err, webDriver)
 		return nil
 	}
-
-	log.Println("Doing inward checks")
 
 	elem, err := webDriver.FindElement(selenium.ByPartialLinkText, "Service Options")
 	if err != nil {
@@ -139,16 +143,23 @@ func getInwardData(webDriver selenium.WebDriver) []inwardService {
 		return nil
 	}
 
+	link := ""
+	if inward {
+		link = "INWARD SERVICE OPTIONS"
+
+	} else {
+		link = "OUTWARD SERVICE OPTIONS"
+	}
 
 	webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
-		elem, err := wb.FindElement(selenium.ByPartialLinkText, "INWARD SERVICE OPTIONS")
+		elem, err := wb.FindElement(selenium.ByPartialLinkText, link)
 		if err != nil {
 			return false, nil
 		}
 		return elem.IsDisplayed()
 	})
 
-	elem, err = webDriver.FindElement(selenium.ByPartialLinkText, "INWARD SERVICE OPTIONS")
+	elem, err = webDriver.FindElement(selenium.ByPartialLinkText, link)
 	if err != nil {
 		handleSeleniumError(err, webDriver)
 		return nil
@@ -166,7 +177,7 @@ func getInwardData(webDriver selenium.WebDriver) []inwardService {
 		return nil
 	}
 
-	v := checkInwardTable(webDriver)
+	v := checkTable(webDriver,inward)
 	elem, err = webDriver.FindElement(selenium.ByPartialLinkText, "2")
 	if err != nil {
 		handleSeleniumError(err, webDriver)
@@ -184,17 +195,27 @@ func getInwardData(webDriver selenium.WebDriver) []inwardService {
 		return v
 	}
 
-	b := checkInwardTable(webDriver)
+	b := checkTable(webDriver,inward)
 	for _, x := range b {
 		v = append(v, x)
 	}
 	return v
 }
 
-func checkInwardTable(webDriver selenium.WebDriver) []inwardService {
+func checkTable(webDriver selenium.WebDriver, inward bool) []inwardService {
+
+	table := ""
+
+	if inward {
+		table = "TABLEINWARDSERVICES"
+
+	} else {
+		table = "TABLEOUTWARDSERVICES"
+	}
+
 	var v []inwardService
 	webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
-		elem, err := wb.FindElement(selenium.ByXPATH, "//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[13]")
+		elem, err := wb.FindElement(selenium.ByXPATH, "//table[@id='"+table+"']/tbody/tr[1]/td[13]")
 		if err != nil {
 			return false, nil
 		}
@@ -204,19 +225,19 @@ func checkInwardTable(webDriver selenium.WebDriver) []inwardService {
 	for i < 50 {
 		var service string
 
-		service, err := getTableElement(i, 2, webDriver)
+		service, err := getTableElement(i, 2,table, webDriver)
 		if err != nil {
 			return v
 		}
-		subService, err := getTableElement(i, 3, webDriver)
+		subService, err := getTableElement(i, 3,table, webDriver)
 		if err != nil {
 			return v
 		}
-		destinationCode, err := getTableElement(i, 4, webDriver)
+		destinationCode, err := getTableElement(i, 4,table, webDriver)
 		if err != nil {
 			return v
 		}
-		status, err := getTableElement(i, 13, webDriver)
+		status, err := getTableElement(i, 13,table, webDriver)
 		if err != nil {
 			return v
 		}
@@ -226,8 +247,8 @@ func checkInwardTable(webDriver selenium.WebDriver) []inwardService {
 	return v
 }
 
-func getTableElement(row, column int, webDriver selenium.WebDriver) (string, error) {
-	elem, err := webDriver.FindElement(selenium.ByXPATH, fmt.Sprintf("//table[@id='TABLEINWARDSERVICES']/tbody/tr[%v]/td[%v]", row, column))
+func getTableElement(row, column int, table string, webDriver selenium.WebDriver) (string, error) {
+	elem, err := webDriver.FindElement(selenium.ByXPATH, fmt.Sprintf("//table[@id='"+table+"']/tbody/tr[%v]/td[%v]", row, column))
 	if err != nil {
 		return "", err
 	}

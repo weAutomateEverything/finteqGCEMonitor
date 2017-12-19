@@ -3,9 +3,11 @@ package database
 import (
 	"gopkg.in/mgo.v2/bson"
 	"time"
-	"log"
 )
 
+/*
+CutoffTime database object for start of day and end of day
+ */
 type CutoffTime struct {
 	Service    string
 	SubService string
@@ -16,18 +18,27 @@ type CutoffTime struct {
 	DayOfWeek int
 }
 
+/*
+SaveCutoff adds a new cutoff time to the DB
+ */
 func SaveCutoff(time CutoffTime){
 	c := database.C("CutoffTimes")
 	c.Insert(time)
 }
 
+/*
+CutoffExists returns true if records exist for the service
+ */
 func CutoffExists(service, subservice string) bool{
 	c := database.C("CutoffTimes")
 	var r []CutoffTime
-	c.Find(bson.M{"service":service,"subservice":subservice}).All(&r)
+	c.Find(bson.M{"service":service,"subservice":subservice,"dayofweek":time.Now().Weekday()}).All(&r)
 	return len(r) > 0
 }
 
+/*
+IsInStartOfDay returns true if a record is found where the current time > start of day but < end of day
+ */
 func IsInStartOfDay(service, subservice string) bool {
 	c := database.C("CutoffTimes")
 	var r []CutoffTime
@@ -47,7 +58,7 @@ func IsInStartOfDay(service, subservice string) bool {
 			return c.EodMinute <= t.Minute()
 		}
 
-		log.Printf("Found Start of day. Service: %v, subservice: %v, start: %02d:%02d, end: %02d:%02d, day: %v  ",c.Service,c.SubService,c.SodHour, c.SodMinute,c.EodHour,c.EodMinute,c.DayOfWeek)
+		//log.Printf("Found Start of day. Service: %v, subservice: %v, start: %02d:%02d, end: %02d:%02d, day: %v  ",c.Service,c.SubService,c.SodHour, c.SodMinute,c.EodHour,c.EodMinute,c.DayOfWeek)
 
 		return true
 	}
