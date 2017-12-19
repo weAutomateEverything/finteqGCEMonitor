@@ -6,7 +6,7 @@ metadata:
     name: gce-config
 data:
   SELENIUM_SERVER: ""
------------------
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -24,7 +24,7 @@ spec:
         app: gce-monitor
     spec:
       containers:
-      - image: zamedic/gceMonitor:1.557.1
+      - image: zamedic/gce-monitor:1.1.1
         name: gce-monitor
         ports:
         - containerPort: 8001
@@ -40,8 +40,8 @@ spec:
             name: gce-secrets
         env:
         - name: HAL_ENDPOINT
-          value: <Enter Value>
-------------------
+          value: ""
+---
 kind: Service
 apiVersion: v1
 metadata:
@@ -54,7 +54,7 @@ spec:
     name: http
     port: 80
     targetPort: 8001
-------------------
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
