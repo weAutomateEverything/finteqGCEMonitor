@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"time"
 	"runtime/debug"
+	"os"
 )
 
 type alertMessage struct {
@@ -118,13 +119,13 @@ func sendError(message string, image []byte, internalError bool) {
 }
 
 func endpoint() string {
-	return "http://c1592023:trendweb@10.187.5.61/GCEControlCentre/MonitorOutwardServices.aspx"
+	return os.Getenv("GCE_ENDPOINT")
 }
 
 func seleniumServer() string {
-	return "http://card-devops-selenium-service.legion.sbsa.local/wd/hub"
+	return os.Getenv("SELENIUM_SERVER")
 }
 
 func errorEndpoint() string {
-	return "http://localhost:8000/alert/image"
+	return os.Getenv("HAL_ENDPOINT")
 }
