@@ -36,40 +36,30 @@ func DoSelenium() {
 		handleSeleniumError(err, webDriver)
 	}
 
-	log.Println("waiting for laoding to close")
-	err = webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
+
+	err = waitForWaitFor(webDriver)
+
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return
+	}
+
+
+
+	doInwardCheck(webDriver)
+	checkServices(webDriver)
+
+}
+
+func waitForWaitFor(webDriver selenium.WebDriver) error {
+	return webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
 		elem, err := wb.FindElement(selenium.ByID, "ModalCalLabel")
 		if err != nil {
 			return true, nil
 		}
 		r, err := elem.IsDisplayed()
-		log.Printf("Display Status: %v, err: %v",r,err)
 		return !r, nil
 	})
-
-	if err != nil {
-		handleSeleniumError(err, webDriver)
-		return
-	}
-
-	log.Println("Loading screen clear... Proceeding... ")
-
-	err = webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
-		elem, err := wb.FindElement(selenium.ByPartialLinkText, "Service Options")
-		if err != nil {
-			return false, nil
-		}
-		return elem.IsDisplayed()
-	})
-
-	if err != nil {
-		handleSeleniumError(err, webDriver)
-		return
-	}
-
-	log.Println("Doing inward checks")
-	doInwardCheck(webDriver)
-
 }
 
 func handleSeleniumError(err error, driver selenium.WebDriver) {

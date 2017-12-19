@@ -3,6 +3,7 @@ package database
 import (
 	"gopkg.in/mgo.v2/bson"
 	"time"
+	"log"
 )
 
 type CutoffTime struct {
@@ -45,6 +46,8 @@ func IsInStartOfDay(service, subservice string) bool {
 		if c.EodHour == t.Hour(){
 			return c.EodMinute <= t.Minute()
 		}
+
+		log.Printf("Found Start of day. Service: %v, subservice: %v, start: %02d:%02d, end: %02d:%02d, day: %v  ",c.Service,c.SubService,c.SodHour, c.SodMinute,c.EodHour,c.EodMinute,c.DayOfWeek)
 
 		return true
 	}

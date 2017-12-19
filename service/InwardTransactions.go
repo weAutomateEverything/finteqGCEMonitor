@@ -12,6 +12,7 @@ import (
 )
 
 var sodOk = map[string]struct{}{"SOD : ACK RECEIVED":{},"SERVICE READY FOR SOD":{}}
+var eodOk = map[string]struct{}{"EOD : ACK RECEIVED":{}}
 func doInwardCheck(webDriver selenium.WebDriver) {
 	v := getInwardData(webDriver)
 	log.Printf("All Data Received - checking Inwards. %v",len(v))
@@ -104,15 +105,40 @@ func parseBlock(service, subservice, sodTime, eodTime, days string) {
 }
 
 func getInwardData(webDriver selenium.WebDriver) []inwardService {
+
+	err := webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
+		elem, err := wb.FindElement(selenium.ByPartialLinkText, "Service Options")
+		if err != nil {
+			return false, nil
+		}
+		return elem.IsDisplayed()
+	})
+
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return nil
+	}
+
+	log.Println("Doing inward checks")
+
 	elem, err := webDriver.FindElement(selenium.ByPartialLinkText, "Service Options")
 	if err != nil {
 		handleSeleniumError(err, webDriver)
+		return nil
 	}
 
 	err = elem.Click()
 	if err != nil {
 		handleSeleniumError(err, webDriver)
+		return nil
 	}
+
+	err = waitForWaitFor(webDriver)
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return nil
+	}
+
 
 	webDriver.Wait(func(wb selenium.WebDriver) (bool, error) {
 		elem, err := wb.FindElement(selenium.ByPartialLinkText, "INWARD SERVICE OPTIONS")
@@ -133,6 +159,13 @@ func getInwardData(webDriver selenium.WebDriver) []inwardService {
 		handleSeleniumError(err, webDriver)
 		return nil
 	}
+
+	err = waitForWaitFor(webDriver)
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return nil
+	}
+
 	v := checkInwardTable(webDriver)
 	elem, err = webDriver.FindElement(selenium.ByPartialLinkText, "2")
 	if err != nil {
@@ -140,6 +173,12 @@ func getInwardData(webDriver selenium.WebDriver) []inwardService {
 		return v
 	}
 	err = elem.Click()
+	if err != nil {
+		handleSeleniumError(err, webDriver)
+		return v
+	}
+
+	err = waitForWaitFor(webDriver)
 	if err != nil {
 		handleSeleniumError(err, webDriver)
 		return v
