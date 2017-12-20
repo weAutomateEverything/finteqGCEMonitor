@@ -31,7 +31,7 @@ func checkServices(driver selenium.WebDriver, inward bool) {
 	elem.MoveTo(10, 10)
 
 	link := ""
-	if inward{
+	if inward {
 		link = "Monitor Inward Services"
 	} else {
 		link = "Monitor Outward Services"
@@ -169,10 +169,9 @@ func checkServices(driver selenium.WebDriver, inward bool) {
 			continue
 		}
 
-		if !displayed{
+		if !displayed {
 			continue
 		}
-
 
 		err = elem.Click()
 		if err != nil {
@@ -193,36 +192,33 @@ func checkServices(driver selenium.WebDriver, inward bool) {
 		}
 		log.Println(elem.Text())
 
-		// We have 12 items per row
-		rows := len(grids) / 12
-		row := 0
-		for row < rows {
-			offset := 12 * row
+		if len(grids) > 11 {
+			//We are only going to report the top row.
 			error := gceError{
-				uid:            getText(grids[1+offset]),
-				filename:       getText(grids[2+offset]),
-				status:         getText(grids[3+offset]),
-				date:           getText(grids[4+offset]),
-				runno:          getText(grids[5+offset]),
-				runid:          getText(grids[6+offset]),
-				attempts:       getText(grids[7+offset]),
-				maxattempts:    getText(grids[8+offset]),
-				responseCode:   getText(grids[9+offset]),
-				nonStdFileName: getText(grids[10+offset]),
-				description:    getText(grids[11+offset]),
+				uid:            getText(grids[1]),
+				filename:       getText(grids[2]),
+				status:         getText(grids[3]),
+				date:           getText(grids[4]),
+				runno:          getText(grids[5]),
+				runid:          getText(grids[6]),
+				attempts:       getText(grids[7]),
+				maxattempts:    getText(grids[8]),
+				responseCode:   getText(grids[9]),
+				nonStdFileName: getText(grids[10]),
+				description:    getText(grids[11]),
 			}
 
-			msg := fmt.Sprintf("*GCE Error*\n UID: %v\n File Name: %v\n Status: %v\n Timestamp: %v\n Run Number: %v\n  " +
-				"Run Indicator: %v\n Attempts: %v\n Max Attempts: %v\n Response Code: %v\n Non Standdard file name: %v\n Description: %v",error.uid,
-					error.filename,error.status,error.date,error.runno,error.runid,error.attempts,error.maxattempts,
-						error.responseCode,error.nonStdFileName,error.description)
+			msg := fmt.Sprintf("*GCE Error*\n UID: %v\n File Name: %v\n Status: %v\n Timestamp: %v\n Run Number: %v\n  "+
+				"Run Indicator: %v\n Attempts: %v\n Max Attempts: %v\n Response Code: %v\n Non Standdard file name: %v\n Description: %v", error.uid,
+				error.filename, error.status, error.date, error.runno, error.runid, error.attempts, error.maxattempts,
+				error.responseCode, error.nonStdFileName, error.description)
 
 			img, _ := driver.Screenshot()
-			sendError(msg,img,false)
-			row++
+			sendError(msg, img, false)
 		}
 	}
 }
+
 
 func getText(element selenium.WebElement) string {
 	str, _ := element.Text()
