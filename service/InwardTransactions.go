@@ -9,23 +9,34 @@ import (
 	"bufio"
 	"io"
 	"log"
+	"bytes"
 )
 
-var sodOk = map[string]struct{}{"SOD : ACK RECEIVED":{}}
-var eodOk = map[string]struct{}{"EOD : ACK RECEIVED":{}}
+var sodOk = map[string]struct{}{"SOD : ACK RECEIVED": {}}
+var eodOk = map[string]struct{}{"EOD : ACK RECEIVED": {}}
+
 func doCheck(webDriver selenium.WebDriver, inward bool) {
-	v := getData(webDriver,inward)
-	for _,x := range v {
-		if database.CutoffExists(x.service + x.subservice, x.destination){
-			if database.IsInStartOfDay(x.service + x.subservice, x.destination){
+	v := getData(webDriver, inward)
+	var e []string
+	for _, x := range v {
+		if database.CutoffExists(x.service+x.subservice, x.destination) {
+			if database.IsInStartOfDay(x.service+x.subservice, x.destination) {
 				_, ok := sodOk[x.status]
 				if !ok {
-					log.Printf("invalid status for service %v, sub service %v, status %v",x.service + x.subservice,x.destination,x.status)
+					e = append(e, fmt.Sprintf("invalid status for service %v, sub service %v, status %v", x.service+x.subservice, x.destination, x.status))
 				}
 			}
 		} else {
-			log.Printf("No records found for service %v, subservice %v",x.service + x.subservice, x.destination)
+			log.Printf("No records found for service %v, subservice %v", x.service+x.subservice, x.destination)
 		}
+	}
+	if len(e) > 0 {
+		b := bytes.Buffer{}
+		for _,s := range e {
+			b.WriteString(s)
+			b.WriteString("\n")
+		}
+		sendError(b.String(),nil,false)
 	}
 }
 
@@ -50,8 +61,8 @@ func ParseInwardCutttoffTimes(i io.Reader) {
 		if len(sodHour) == 0 {
 			continue
 		}
-		parseBlock(tokens[0],tokens[1],tokens[2],tokens[3],tokens[4])
-		parseBlock(tokens[0],tokens[1],tokens[5],tokens[6],tokens[7])
+		parseBlock(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
+		parseBlock(tokens[0], tokens[1], tokens[5], tokens[6], tokens[7])
 	}
 
 }
@@ -60,16 +71,15 @@ func parseBlock(service, subservice, sodTime, eodTime, days string) {
 	sodTime = strings.TrimSpace(sodTime)
 	eodTime = strings.TrimSpace(eodTime)
 
-
 	if len(sodTime) == 0 {
 		return
 	}
 
-	sodTime = strings.Replace(sodTime,"A ","",1)
-	eodTime = strings.Replace(eodTime,"A ","",1)
+	sodTime = strings.Replace(sodTime, "A ", "", 1)
+	eodTime = strings.Replace(eodTime, "A ", "", 1)
 
 	days = strings.TrimSpace(days)
-	days = strings.Replace(days,"(ph)","",-1)
+	days = strings.Replace(days, "(ph)", "", -1)
 
 	c := database.CutoffTime{Service: service, SubService: subservice}
 
@@ -91,7 +101,7 @@ func parseBlock(service, subservice, sodTime, eodTime, days string) {
 		return
 	}
 
-	if days == "Mon - Fri"{
+	if days == "Mon - Fri" {
 		i := 1
 		for i < 6 {
 			c.DayOfWeek = i
@@ -177,7 +187,7 @@ func getData(webDriver selenium.WebDriver, inward bool) []inwardService {
 		return nil
 	}
 
-	v := checkTable(webDriver,inward)
+	v := checkTable(webDriver, inward)
 	elem, err = webDriver.FindElement(selenium.ByPartialLinkText, "2")
 	if err != nil {
 		handleSeleniumError(err, webDriver)
@@ -195,7 +205,7 @@ func getData(webDriver selenium.WebDriver, inward bool) []inwardService {
 		return v
 	}
 
-	b := checkTable(webDriver,inward)
+	b := checkTable(webDriver, inward)
 	for _, x := range b {
 		v = append(v, x)
 	}
@@ -225,19 +235,19 @@ func checkTable(webDriver selenium.WebDriver, inward bool) []inwardService {
 	for i < 50 {
 		var service string
 
-		service, err := getTableElement(i, 2,table, webDriver)
+		service, err := getTableElement(i, 2, table, webDriver)
 		if err != nil {
 			return v
 		}
-		subService, err := getTableElement(i, 3,table, webDriver)
+		subService, err := getTableElement(i, 3, table, webDriver)
 		if err != nil {
 			return v
 		}
-		destinationCode, err := getTableElement(i, 4,table, webDriver)
+		destinationCode, err := getTableElement(i, 4, table, webDriver)
 		if err != nil {
 			return v
 		}
-		status, err := getTableElement(i, 13,table, webDriver)
+		status, err := getTableElement(i, 13, table, webDriver)
 		if err != nil {
 			return v
 		}
