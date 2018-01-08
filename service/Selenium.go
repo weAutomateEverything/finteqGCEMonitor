@@ -83,6 +83,7 @@ func waitForWaitFor(webDriver selenium.WebDriver) error {
 }
 
 func handleSeleniumError(err error, driver selenium.WebDriver) {
+	log.Println(err.Error())
 	debug.PrintStack()
 	if driver == nil {
 		sendError(err.Error(), nil, true)
