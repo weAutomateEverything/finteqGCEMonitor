@@ -98,7 +98,7 @@ func handleSeleniumError(err error, driver selenium.WebDriver) {
 	sendError(err.Error(), bytes, true)
 }
 
-func sendError(message string, image []byte, internalError bool) {
+func sendError(message string, image []byte, internalError bool) error {
 	a := alertMessage{Message: message, internalError:internalError}
 	if image != nil {
 		a.Image = base64.StdEncoding.EncodeToString(image)
@@ -109,7 +109,7 @@ func sendError(message string, image []byte, internalError bool) {
 	response, err := http.Post(errorEndpoint(), "application/json", bytes.NewReader(request))
 	if err != nil {
 		log.Println(err.Error())
-		return
+		return err
 	}
 
 	defer response.Body.Close()
@@ -117,6 +117,7 @@ func sendError(message string, image []byte, internalError bool) {
 	if response.StatusCode != 200 {
 		log.Println(ioutil.ReadAll(response.Body))
 	}
+	return nil
 
 }
 

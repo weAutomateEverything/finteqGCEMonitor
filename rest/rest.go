@@ -36,6 +36,7 @@ func init() {
 func getRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/inwards/cutoff", initializeInwards)
+	r.HandleFunc("/ping", pingHal)
 
 	router.Mux = r
 	return r
