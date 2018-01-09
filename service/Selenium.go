@@ -132,10 +132,10 @@ func errorEndpoint() string {
 
 func getSessions() error {
 	response, err := http.Get(endpoint() + "/sessions")
-	defer response.Body.Close()
 	if err != nil {
 		return err
 	}
+	response.Body.Close()
 	return nil
 
 }
