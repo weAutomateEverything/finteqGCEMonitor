@@ -119,7 +119,7 @@ func sendError(message string, image []byte, internalError bool) error {
 }
 
 func endpoint() string {
-	return os.Getenv("GCE_ENDPOINT")
+	return os.Getenv("gce_endpoint")
 }
 
 func seleniumServer() string {
@@ -131,7 +131,7 @@ func errorEndpoint() string {
 }
 
 func getSessions() error {
-	response, err := http.Get(endpoint() + "/sessions")
+	response, err := http.Get(seleniumServer() + "/sessions")
 	if err != nil {
 		return err
 	}
