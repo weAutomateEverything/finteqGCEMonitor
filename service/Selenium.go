@@ -15,21 +15,21 @@ import (
 
 type alertMessage struct {
 	Message, Image string
-	internalError bool
+	internalError  bool
 }
 
 type inwardService struct {
 	service, subservice, destination, status string
 }
 
-func init(){
+func init() {
 	go func() {
 		monitor()
 	}()
 
 }
 
-func monitor(){
+func monitor() {
 	for true {
 		doSelenium()
 		time.Sleep(10 * time.Minute)
@@ -54,7 +54,6 @@ func doSelenium() {
 		handleSeleniumError(err, webDriver)
 	}
 
-
 	err = waitForWaitFor(webDriver)
 
 	if err != nil {
@@ -62,12 +61,10 @@ func doSelenium() {
 		return
 	}
 
-
-	checkServices(webDriver,true)
-	checkServices(webDriver,false)
-	doCheck(webDriver,false)
-	doCheck(webDriver,true)
-
+	checkServices(webDriver, true)
+	checkServices(webDriver, false)
+	doCheck(webDriver, false)
+	doCheck(webDriver, true)
 
 }
 
@@ -99,7 +96,7 @@ func handleSeleniumError(err error, driver selenium.WebDriver) {
 }
 
 func sendError(message string, image []byte, internalError bool) error {
-	a := alertMessage{Message: message, internalError:internalError}
+	a := alertMessage{Message: message, internalError: internalError}
 	if image != nil {
 		a.Image = base64.StdEncoding.EncodeToString(image)
 	}
@@ -131,4 +128,14 @@ func seleniumServer() string {
 
 func errorEndpoint() string {
 	return os.Getenv("HAL_ENDPOINT")
+}
+
+func getSessions() error {
+	response, err := http.Get(endpoint() + "/sessions")
+	defer response.Body.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
