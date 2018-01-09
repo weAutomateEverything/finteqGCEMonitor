@@ -42,6 +42,7 @@ func doSelenium() {
 	caps := selenium.Capabilities(map[string]interface{}{"browserName": "chrome"})
 	caps["chrome.switches"] = []string{"--ignore-certificate-errors"}
 
+	log.Printf("connecting to: %v",seleniumServer())
 	if webDriver, err = selenium.NewRemote(caps, seleniumServer()); err != nil {
 		handleSeleniumError(err, nil)
 		return
@@ -135,6 +136,8 @@ func getSessions() error {
 	if err != nil {
 		return err
 	}
+	r, err := ioutil.ReadAll(response.Body)
+	log.Println(r)
 	response.Body.Close()
 	return nil
 
