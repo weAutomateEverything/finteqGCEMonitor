@@ -32,7 +32,7 @@ func init(){
 func monitor(){
 	for true {
 		doSelenium()
-		time.Sleep(10 * time.Minute)
+		time.Sleep(20 * time.Minute)
 	}
 }
 
