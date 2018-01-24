@@ -15,7 +15,7 @@ import (
 
 type alertMessage struct {
 	Message, Image string
-	internalError  bool
+	InternalError  bool
 }
 
 type inwardService struct {
@@ -97,7 +97,7 @@ func handleSeleniumError(err error, driver selenium.WebDriver) {
 }
 
 func sendError(message string, image []byte, internalError bool) error {
-	a := alertMessage{Message: message, internalError: internalError}
+	a := alertMessage{Message: message, InternalError: internalError}
 	if image != nil {
 		a.Image = base64.StdEncoding.EncodeToString(image)
 	}
@@ -132,12 +132,12 @@ func errorEndpoint() string {
 }
 
 func getSessions() error {
-	response, err := http.Get(seleniumServer() + "/sessions")
+	response, err := http.Get(seleniumServer() + "sessions")
 	if err != nil {
 		return err
 	}
 	r, err := ioutil.ReadAll(response.Body)
-	log.Println(r)
+	log.Println(string(r))
 	response.Body.Close()
 	return nil
 
