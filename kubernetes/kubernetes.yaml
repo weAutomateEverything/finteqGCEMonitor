@@ -5,7 +5,8 @@ metadata:
   labels:
     name: gce-config
 data:
-  SELENIUM_SERVER: ""
+  SELENIUM_SERVER: http://selenium/wd/hub
+  HAL_ENDPOINT: http://hal-service
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -38,14 +39,11 @@ spec:
             name: hal-secrets
         - secretRef:
             name: gce-secrets
-        env:
-        - name: HAL_ENDPOINT
-          value: ""
 ---
 kind: Service
 apiVersion: v1
 metadata:
-  name: gce-monitor-service
+  name: gce-monitor
 spec:
   selector:
     app: gce-monitor
@@ -67,6 +65,6 @@ spec:
     http:
       paths:
       - backend:
-          serviceName: gce-monitor-serviceebook
+          serviceName: gce-monitor-service
           servicePort: http
 
