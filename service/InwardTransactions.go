@@ -55,6 +55,7 @@ func ParseInwardCutttoffTimes(i io.Reader) {
 
 	for scanner.Scan() {
 		line := scanner.Text()
+		log.Printf("Parsing Line: %v",line)
 		tokens := strings.Split(line, ";")
 		sodHour := tokens[2]
 		sodHour = strings.TrimSpace(sodHour)
