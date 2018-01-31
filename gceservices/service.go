@@ -18,8 +18,8 @@ type service struct {
 	inward bool
 }
 
-func NewService(service selenium2.Service, inward bool) Service{
-	return &service{service, inward}
+func NewService(svc selenium2.Service, inward bool) Service{
+	return &service{svc, inward}
 }
 
 type gceError struct {
