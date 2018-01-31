@@ -93,7 +93,7 @@ func (s service) parseBlock(service, subservice, sodTime, eodTime, days string) 
 	days = strings.TrimSpace(days)
 	days = strings.Replace(days, "(ph)", "", -1)
 
-	c := s.store.cutoffTime{Service: service, SubService: subservice}
+	c := cutoffTime{Service: service, SubService: subservice}
 
 	sod := strings.Split(sodTime, "H")
 	c.SodHour, _ = strconv.Atoi(sod[0])
