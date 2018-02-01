@@ -8,8 +8,9 @@ import (
 	"bufio"
 	"log"
 	"bytes"
-	selenium2 "github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/selenium"
 	"errors"
+	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
+	"github.com/zamedic/go2hal/halSelenium"
 )
 
 type Service interface {
@@ -19,11 +20,11 @@ type Service interface {
 
 type service struct {
 	store    Store
-	selenium selenium2.Service
+	selenium gceSelenium.Service
 	inward bool
 }
 
-func NewService(store Store, selenium selenium2.Service, inward bool) Service {
+func NewService(store Store, selenium gceSelenium.Service, inward bool) Service {
 	return &service{store, selenium, inward}
 }
 
@@ -34,7 +35,7 @@ var eodOk = map[string]struct{}{"EOD : ACK RECEIVED": {}}
 func (s *service) DoCheck() {
 	v , err := s.getData()
 	if err != nil {
-		s.selenium.HandleSeleniumError(err)
+		s.selenium.HandleSeleniumError(true,err)
 		return
 	}
 	var e []string
@@ -56,7 +57,7 @@ func (s *service) DoCheck() {
 			b.WriteString(s)
 			b.WriteString("\n")
 		}
-		s.selenium.HandleSeleniumError(&selenium2.SeleniumnError{false, errors.New(b.String())})
+		s.selenium.HandleSeleniumError(false, errors.New(b.String()))
 	}
 }
 
@@ -143,24 +144,24 @@ func (s service) getData() ([]inwardService, error) {
 	})
 
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{true, err}
 	}
 
 	elem, err := s.selenium.Driver().FindElement(selenium.ByPartialLinkText, "Service Options")
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{true, err}
 
 	}
 
 	err = elem.Click()
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{true, err}
 
 	}
 
 	err = s.selenium.WaitForWaitFor()
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{true, err}
 
 	}
 
@@ -182,37 +183,37 @@ func (s service) getData() ([]inwardService, error) {
 
 	elem, err = s.selenium.Driver().FindElement(selenium.ByPartialLinkText, link)
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil,err
 
 	}
 
 	err = elem.Click()
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, err
 
 	}
 
 	err = s.selenium.WaitForWaitFor()
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, err
 
 	}
 
 	v := s.checkTable()
 	elem, err = s.selenium.Driver().FindElement(selenium.ByPartialLinkText, "2")
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil,err
 
 	}
 	err = elem.Click()
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, err
 
 	}
 
 	err = s.selenium.WaitForWaitFor()
 	if err != nil {
-		return nil, &selenium2.SeleniumnError{true, err}
+		return nil, err
 
 	}
 
