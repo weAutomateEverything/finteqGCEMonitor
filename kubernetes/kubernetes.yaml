@@ -5,7 +5,7 @@ metadata:
   labels:
     name: gce-config
 data:
-  SELENIUM_SERVER: http://selenium/wd/hub
+  SELENIUM_SERVER: http://halSelenium/wd/hub
   HAL_ENDPOINT: http://hal-service
 ---
 apiVersion: extensions/v1beta1

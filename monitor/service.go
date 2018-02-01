@@ -3,10 +3,10 @@ package monitor
 import (
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/cutofftimes"
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices"
-	selenium2 "github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/selenium"
 	"github.com/zamedic/go2hal/alert"
 	"os"
 	"time"
+	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
 )
 
 type Service interface {
@@ -38,19 +38,19 @@ func (s *service) startMonitor() {
 }
 
 func (s *service) doCheck() {
-	selenium := selenium2.NewChromeService(s.alert, s.seleniumEndpoint)
+	selenium := gceSelenium.NewService(s.alert, s.seleniumEndpoint)
 	defer selenium.Driver().Quit()
 
 	err := selenium.Driver().Get(endpoint())
 	if err != nil {
-		selenium.HandleSeleniumError(&selenium2.SeleniumnError{true, err})
+		selenium.HandleSeleniumError(true, err)
 		return
 	}
 
 	err = selenium.WaitForWaitFor()
 
 	if err != nil {
-		selenium.HandleSeleniumError(&selenium2.SeleniumnError{true, err})
+		selenium.HandleSeleniumError(true, err)
 		return
 	}
 
