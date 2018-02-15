@@ -11,7 +11,7 @@ import (
 )
 
 type Service interface {
-	RunServiceCheck()
+	RunServiceCheck(inward bool)
 }
 
 type service struct {
@@ -19,8 +19,8 @@ type service struct {
 	inward   bool
 }
 
-func NewService(svc gceSelenium.Service, inward bool) Service {
-	return &service{svc, inward}
+func NewService(svc gceSelenium.Service) Service {
+	return &service{selenium: svc}
 }
 
 type gceError struct {
@@ -37,7 +37,8 @@ type gceError struct {
 	description    string
 }
 
-func (s service) RunServiceCheck() {
+func (s *service) RunServiceCheck(inward bool) {
+	s.inward = inward
 	err := s.checkServices()
 	if err != nil {
 		s.selenium.HandleSeleniumError(true, err)

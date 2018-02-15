@@ -14,8 +14,8 @@ import (
 )
 
 type Service interface {
-	DoCheck()
-	parseInwardCutttoffTimes(i string)
+	DoCheck(inward bool)
+	parseInwardCutttoffTimes(string)
 }
 
 type service struct {
@@ -24,14 +24,15 @@ type service struct {
 	inward   bool
 }
 
-func NewService(store Store, selenium gceSelenium.Service, inward bool) Service {
-	return &service{store, selenium, inward}
+func NewService(store Store, selenium gceSelenium.Service) Service {
+	return &service{store: store, selenium: selenium}
 }
 
 var sodOk = map[string]struct{}{"SOD : ACK RECEIVED": {}}
 var eodOk = map[string]struct{}{"EOD : ACK RECEIVED": {}}
 
-func (s *service) DoCheck() {
+func (s *service) DoCheck(inward bool) {
+	s.inward = inward
 	v, err := s.getData()
 	if err != nil {
 		s.selenium.HandleSeleniumError(true, err)
