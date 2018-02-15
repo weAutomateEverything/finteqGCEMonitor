@@ -25,7 +25,7 @@ spec:
         app: gce-monitor
     spec:
       containers:
-      - image: zamedic/gce-monitor:1.1.1
+      - image: zamedic/gce-monitor:1.58.1
         name: gce-monitor
         ports:
         - containerPort: 8001
@@ -39,6 +39,10 @@ spec:
             name: hal-secrets
         - secretRef:
             name: gce-secrets
+        env:
+        - name: MONGO_DATABASE
+          value: gpphalprod
+
 ---
 kind: Service
 apiVersion: v1

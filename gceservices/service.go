@@ -1,25 +1,25 @@
 package gceservices
 
 import (
-	"github.com/tebeka/selenium"
-	"strings"
-	"log"
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
+	"github.com/pkg/errors"
+	"github.com/tebeka/selenium"
 	"github.com/zamedic/go2hal/halSelenium"
+	"log"
+	"strings"
 )
 
-type Service interface{
+type Service interface {
 	RunServiceCheck()
 }
 
 type service struct {
 	selenium gceSelenium.Service
-	inward bool
+	inward   bool
 }
 
-func NewService(svc gceSelenium.Service, inward bool) Service{
+func NewService(svc gceSelenium.Service, inward bool) Service {
 	return &service{svc, inward}
 }
 
@@ -37,14 +37,14 @@ type gceError struct {
 	description    string
 }
 
-func (s service)RunServiceCheck(){
+func (s service) RunServiceCheck() {
 	err := s.checkServices()
 	if err != nil {
-		s.selenium.HandleSeleniumError(true,err)
+		s.selenium.HandleSeleniumError(true, err)
 	}
 }
 
-func (s *service)checkServices() error {
+func (s *service) checkServices() error {
 	driver := s.selenium.Driver()
 	elem, err := driver.FindElement(selenium.ByPartialLinkText, "Monitor Services")
 	if err != nil {
@@ -89,19 +89,19 @@ func (s *service)checkServices() error {
 		return elem.IsDisplayed()
 	})
 	if err != nil {
-		return &halSelenium.SeleniumnError{true,err}
+		return &halSelenium.SeleniumnError{true, err}
 	}
 
 	elems, err := driver.FindElements(selenium.ByClassName, "ErrorTreeView")
 	if err != nil {
-		return &halSelenium.SeleniumnError{true,err}
+		return &halSelenium.SeleniumnError{true, err}
 	}
 
 	//Expand the first level of trees
 	for _, elem = range elems {
 		id, err := elem.GetAttribute("id")
 		if err != nil {
-			return &halSelenium.SeleniumnError{true,err}
+			return &halSelenium.SeleniumnError{true, err}
 		}
 		if strings.Index(id, "^") > 0 {
 			continue
@@ -110,18 +110,18 @@ func (s *service)checkServices() error {
 
 		elem, err = driver.FindElement(selenium.ByID, id)
 		if err != nil {
-			return &halSelenium.SeleniumnError{true,err}
+			return &halSelenium.SeleniumnError{true, err}
 		}
 
 		displayed, err := elem.IsDisplayed()
 		if err != nil {
-			return &halSelenium.SeleniumnError{true,err}
+			return &halSelenium.SeleniumnError{true, err}
 		}
 
 		if displayed {
 			err = elem.Click()
 			if err != nil {
-				return &halSelenium.SeleniumnError{true,err}
+				return &halSelenium.SeleniumnError{true, err}
 			}
 		}
 	}
@@ -129,13 +129,13 @@ func (s *service)checkServices() error {
 	//Expand the Second Level of Trees
 	elems, err = driver.FindElements(selenium.ByClassName, "ErrorTreeView")
 	if err != nil {
-		return &halSelenium.SeleniumnError{true,err}
+		return &halSelenium.SeleniumnError{true, err}
 	}
 
 	for _, elem = range elems {
 		id, err := elem.GetAttribute("id")
 		if err != nil {
-			return &halSelenium.SeleniumnError{true,err}
+			return &halSelenium.SeleniumnError{true, err}
 		}
 
 		if strings.Index(id, "^") > 0 {
@@ -144,16 +144,16 @@ func (s *service)checkServices() error {
 
 			elem, err = driver.FindElement(selenium.ByID, id)
 			if err != nil {
-				return &halSelenium.SeleniumnError{true,err}
+				return &halSelenium.SeleniumnError{true, err}
 			}
 			displayed, err := elem.IsDisplayed()
 			if err != nil {
-				return &halSelenium.SeleniumnError{true,err}
+				return &halSelenium.SeleniumnError{true, err}
 			}
 			if displayed {
 				err = elem.Click()
 				if err != nil {
-					return &halSelenium.SeleniumnError{true,err}
+					return &halSelenium.SeleniumnError{true, err}
 				}
 			} else {
 				log.Printf("%v is not displayed", id)
@@ -166,14 +166,14 @@ func (s *service)checkServices() error {
 
 	elems, err = driver.FindElements(selenium.ByCSSSelector, "TD.ErrorTreeView > A.TreeviewText")
 	if err != nil {
-		return &halSelenium.SeleniumnError{true,err}
+		return &halSelenium.SeleniumnError{true, err}
 	}
 
 	for _, elem = range elems {
 
 		displayed, err := elem.IsDisplayed()
 		if err != nil {
-			s.selenium.HandleSeleniumError(true,err)
+			s.selenium.HandleSeleniumError(true, err)
 			continue
 		}
 
@@ -183,19 +183,19 @@ func (s *service)checkServices() error {
 
 		err = elem.Click()
 		if err != nil {
-			s.selenium.HandleSeleniumError(true,err)
+			s.selenium.HandleSeleniumError(true, err)
 			continue
 		}
 
 		err = s.selenium.WaitForWaitFor()
 		if err != nil {
-			s.selenium.HandleSeleniumError(true,err)
+			s.selenium.HandleSeleniumError(true, err)
 			continue
 		}
 
 		grids, err := driver.FindElements(selenium.ByClassName, "GridCellError")
 		if err != nil {
-			s.selenium.HandleSeleniumError(true,err)
+			s.selenium.HandleSeleniumError(true, err)
 			continue
 		}
 		log.Println(elem.Text())
@@ -221,18 +221,14 @@ func (s *service)checkServices() error {
 				error.filename, error.status, error.date, error.runno, error.runid, error.attempts, error.maxattempts,
 				error.responseCode, error.nonStdFileName, error.description)
 
-			s.selenium.HandleSeleniumError(false,errors.New(msg))
+			s.selenium.HandleSeleniumError(false, errors.New(msg))
 
 		}
 	}
 	return nil
 }
 
-
 func getText(element selenium.WebElement) string {
 	str, _ := element.Text()
 	return str
 }
-
-
-

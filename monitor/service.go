@@ -2,11 +2,11 @@ package monitor
 
 import (
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/cutofftimes"
+	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices"
 	"github.com/zamedic/go2hal/alert"
 	"os"
 	"time"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
 )
 
 type Service interface {
@@ -15,11 +15,10 @@ type Service interface {
 type service struct {
 	alert            alert.Service
 	cutoffStore      cutofftimes.Store
-	seleniumEndpoint string
 }
 
-func NewService(alert alert.Service, cutoffStore cutofftimes.Store, seleniumEndpoint string) Service {
-	s := &service{alert,cutoffStore,seleniumEndpoint}
+func NewService(alert alert.Service, cutoffStore cutofftimes.Store) Service {
+	s := &service{alert, cutoffStore}
 	go func() {
 		s.startMonitor()
 	}()
@@ -38,7 +37,7 @@ func (s *service) startMonitor() {
 }
 
 func (s *service) doCheck() {
-	selenium := gceSelenium.NewService(s.alert, s.seleniumEndpoint)
+	selenium := gceSelenium.NewService(s.alert)
 	defer selenium.Driver().Quit()
 
 	err := selenium.Driver().Get(endpoint())
