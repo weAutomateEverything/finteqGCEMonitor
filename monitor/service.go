@@ -41,7 +41,8 @@ func (s *service) doCheck() {
 
 	err := selenium.NewClient()
 	if err != nil {
-		panic (err)
+		s.alert.SendError(err)
+		return
 	}
 	defer selenium.Driver().Quit()
 
