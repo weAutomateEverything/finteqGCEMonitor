@@ -7,7 +7,6 @@ import (
 	"github.com/zamedic/go2hal/alert"
 	"os"
 	"time"
-	"log"
 )
 
 type Service interface {
