@@ -38,6 +38,8 @@ func (s *service) startMonitor() {
 
 func (s *service) doCheck() {
 	selenium := gceSelenium.NewService(s.alert)
+
+	selenium.NewClient()
 	defer selenium.Driver().Quit()
 
 	err := selenium.Driver().Get(endpoint())

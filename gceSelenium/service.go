@@ -4,10 +4,12 @@ import (
 	"github.com/tebeka/selenium"
 	"github.com/zamedic/go2hal/alert"
 	"github.com/zamedic/go2hal/halSelenium"
+	"os"
 )
 
 type Service interface {
 	HandleSeleniumError(internal bool, err error)
+	NewClient() error
 	Driver() selenium.WebDriver
 	WaitForWaitFor() error
 }
@@ -38,4 +40,12 @@ func (s *service) WaitForWaitFor() error {
 		r, err := elem.IsDisplayed()
 		return !r, nil
 	})
+}
+
+func (s *service)NewClient() error{
+	return s.halSelenium.NewClient(seleniumServer())
+}
+
+func seleniumServer() string {
+	return os.Getenv("SELENIUM_SERVER")
 }
