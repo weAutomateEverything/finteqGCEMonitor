@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/zamedic/go2hal/alert"
-	"os"
-	"github.com/zamedic/go2hal/database"
+	"fmt"
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/cutofftimes"
 	monitor2 "github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/monitor"
-	"net/http"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/zamedic/go2hal/alert"
+	"github.com/zamedic/go2hal/database"
+	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
-	"fmt"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 
 	alert := alert.NewKubernetesAlertProxy(errorEndpoint())
 
-	_ = monitor2.NewService(alert, cutoffStore, seleniumServer())
+	_ = monitor2.NewService(alert, cutoffStore)
 
 	httpLogger := log.With(logger, "component", "http")
 
@@ -48,10 +48,6 @@ func main() {
 
 	logger.Log("terminated", <-errs)
 
-}
-
-func seleniumServer() string {
-	return os.Getenv("SELENIUM_SERVER")
 }
 
 func errorEndpoint() string {

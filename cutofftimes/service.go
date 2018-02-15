@@ -1,16 +1,16 @@
 package cutofftimes
 
 import (
-	"github.com/tebeka/selenium"
-	"fmt"
-	"strings"
-	"strconv"
 	"bufio"
-	"log"
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
+	"github.com/tebeka/selenium"
 	"github.com/zamedic/go2hal/halSelenium"
+	"log"
+	"strconv"
+	"strings"
 )
 
 type Service interface {
@@ -21,7 +21,7 @@ type Service interface {
 type service struct {
 	store    Store
 	selenium gceSelenium.Service
-	inward bool
+	inward   bool
 }
 
 func NewService(store Store, selenium gceSelenium.Service, inward bool) Service {
@@ -31,11 +31,10 @@ func NewService(store Store, selenium gceSelenium.Service, inward bool) Service 
 var sodOk = map[string]struct{}{"SOD : ACK RECEIVED": {}}
 var eodOk = map[string]struct{}{"EOD : ACK RECEIVED": {}}
 
-
 func (s *service) DoCheck() {
-	v , err := s.getData()
+	v, err := s.getData()
 	if err != nil {
-		s.selenium.HandleSeleniumError(true,err)
+		s.selenium.HandleSeleniumError(true, err)
 		return
 	}
 	var e []string
@@ -61,8 +60,7 @@ func (s *service) DoCheck() {
 	}
 }
 
-
-func (s service)parseInwardCutttoffTimes(i string) {
+func (s service) parseInwardCutttoffTimes(i string) {
 	scanner := bufio.NewScanner(strings.NewReader(i))
 
 	for scanner.Scan() {
@@ -183,7 +181,7 @@ func (s service) getData() ([]inwardService, error) {
 
 	elem, err = s.selenium.Driver().FindElement(selenium.ByPartialLinkText, link)
 	if err != nil {
-		return nil,err
+		return nil, err
 
 	}
 
@@ -202,7 +200,7 @@ func (s service) getData() ([]inwardService, error) {
 	v := s.checkTable()
 	elem, err = s.selenium.Driver().FindElement(selenium.ByPartialLinkText, "2")
 	if err != nil {
-		return nil,err
+		return nil, err
 
 	}
 	err = elem.Click()
@@ -224,7 +222,7 @@ func (s service) getData() ([]inwardService, error) {
 	return v, nil
 }
 
-func (s *service)checkTable() []inwardService {
+func (s *service) checkTable() []inwardService {
 
 	table := ""
 
@@ -269,7 +267,7 @@ func (s *service)checkTable() []inwardService {
 	return v
 }
 
-func (s *service)getTableElement(row, column int, table string) (string, error) {
+func (s *service) getTableElement(row, column int, table string) (string, error) {
 	elem, err := s.selenium.Driver().FindElement(selenium.ByXPATH, fmt.Sprintf("//table[@id='"+table+"']/tbody/tr[%v]/td[%v]", row, column))
 	if err != nil {
 		return "", err
