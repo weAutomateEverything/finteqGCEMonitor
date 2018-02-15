@@ -45,7 +45,7 @@ func (s *service) doCheck() {
 	}
 	defer selenium.Driver().Quit()
 
-	err := selenium.Driver().Get(endpoint())
+	err = selenium.Driver().Get(endpoint())
 	if err != nil {
 		selenium.HandleSeleniumError(true, err)
 		return
