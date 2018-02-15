@@ -7,6 +7,7 @@ import (
 	"github.com/zamedic/go2hal/alert"
 	"os"
 	"time"
+	"log"
 )
 
 type Service interface {
@@ -41,7 +42,8 @@ func (s *service) doCheck() {
 
 	err := selenium.NewClient()
 	if err != nil {
-		panic (err)
+		log.Println(err.Error())
+		return
 	}
 	defer selenium.Driver().Quit()
 
