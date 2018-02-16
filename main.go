@@ -31,7 +31,7 @@ func main() {
 
 	fieldKeys := []string{"method"}
 
-	alert := alert.NewKubernetesAlertProxy(errorEndpoint())
+	alert := alert.NewKubernetesAlertProxy("")
 
 	seleniumService := gceSelenium.NewService(alert)
 	seleniumService = gceSelenium.NewInstrumentService(kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
@@ -130,8 +130,4 @@ func accessControl(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
-}
-
-func errorEndpoint() string {
-	return os.Getenv("HAL_ENDPOINT")
 }
