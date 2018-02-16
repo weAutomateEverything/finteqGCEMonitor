@@ -42,7 +42,7 @@ func (s *service) WaitForWaitFor() error {
 	})
 }
 
-func (s *service)NewClient() error{
+func (s *service) NewClient() error {
 	return s.halSelenium.NewClient(seleniumServer())
 }
 

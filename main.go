@@ -6,12 +6,17 @@ import (
 	monitor2 "github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/monitor"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
+	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/zamedic/go2hal/alert"
 	"github.com/zamedic/go2hal/database"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
+	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices"
 )
 
 func main() {
@@ -23,12 +28,72 @@ func main() {
 
 	db := database.NewConnection()
 
-	cutoffStore := cutofftimes.NewMongoStore(db)
-	cutoffService := cutofftimes.NewService(cutoffStore, nil, true)
+	fieldKeys := []string{"method"}
 
 	alert := alert.NewKubernetesAlertProxy(errorEndpoint())
 
-	_ = monitor2.NewService(alert, cutoffStore)
+	seleniumService := gceSelenium.NewService(alert)
+	seleniumService = gceSelenium.NewInstrumentService(kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+		Namespace: "api",
+		Subsystem: "selenium",
+		Name:      "request_count",
+		Help:      "Number of requests received.",
+	}, fieldKeys),
+		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: "api",
+			Subsystem: "selenium",
+			Name:      "error_count",
+			Help:      "Number of errors encountered.",
+		}, fieldKeys),
+		kitprometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
+			Namespace: "api",
+			Subsystem: "selenium",
+			Name:      "request_latency_microseconds",
+			Help:      "Total duration of requests in microseconds.",
+		}, fieldKeys), seleniumService)
+
+	gceService := gceservices.NewService(seleniumService)
+	gceService = gceservices.NewInstrumentService(kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+		Namespace: "api",
+		Subsystem: "gceService",
+		Name:      "request_count",
+		Help:      "Number of requests received.",
+	}, fieldKeys),
+		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: "api",
+			Subsystem: "gceService",
+			Name:      "error_count",
+			Help:      "Number of errors encountered.",
+		}, fieldKeys),
+		kitprometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
+			Namespace: "api",
+			Subsystem: "gceService",
+			Name:      "request_latency_microseconds",
+			Help:      "Total duration of requests in microseconds.",
+		}, fieldKeys), gceService)
+
+	cutoffStore := cutofftimes.NewMongoStore(db)
+	cutoffService := cutofftimes.NewService(cutoffStore, seleniumService)
+	cutoffService = cutofftimes.NewInstrumentService(kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+		Namespace: "api",
+		Subsystem: "cutoffService",
+		Name:      "request_count",
+		Help:      "Number of requests received.",
+	}, fieldKeys),
+		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: "api",
+			Subsystem: "cutoffService",
+			Name:      "error_count",
+			Help:      "Number of errors encountered.",
+		}, fieldKeys),
+		kitprometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
+			Namespace: "api",
+			Subsystem: "cutoffService",
+			Name:      "request_latency_microseconds",
+			Help:      "Total duration of requests in microseconds.",
+		}, fieldKeys), cutoffService)
+
+	_ = monitor2.NewService(alert, seleniumService, gceService, cutoffService)
 
 	httpLogger := log.With(logger, "component", "http")
 

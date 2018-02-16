@@ -13,12 +13,15 @@ type Service interface {
 }
 
 type service struct {
-	alert            alert.Service
-	cutoffStore      cutofftimes.Store
+	alert       alert.Service
+	selenium    gceSelenium.Service
+	gceService  gceservices.Service
+	cutofftimes cutofftimes.Service
 }
 
-func NewService(alert alert.Service, cutoffStore cutofftimes.Store) Service {
-	s := &service{alert, cutoffStore}
+func NewService(alert alert.Service, selenium gceSelenium.Service, gceService gceservices.Service,
+	cutofftimes cutofftimes.Service) Service {
+	s := &service{alert, selenium, gceService, cutofftimes}
 	go func() {
 		s.startMonitor()
 	}()
@@ -37,39 +40,32 @@ func (s *service) startMonitor() {
 }
 
 func (s *service) doCheck() {
-	selenium := gceSelenium.NewService(s.alert)
 
-	err := selenium.NewClient()
+	err := s.selenium.NewClient()
 	if err != nil {
 		s.alert.SendError(err)
 		return
 	}
-	defer selenium.Driver().Quit()
+	defer s.selenium.Driver().Quit()
 
-	err = selenium.Driver().Get(endpoint())
+	err = s.selenium.Driver().Get(endpoint())
 	if err != nil {
-		selenium.HandleSeleniumError(true, err)
+		s.selenium.HandleSeleniumError(true, err)
 		return
 	}
 
-	err = selenium.WaitForWaitFor()
+	err = s.selenium.WaitForWaitFor()
 
 	if err != nil {
-		selenium.HandleSeleniumError(true, err)
+		s.selenium.HandleSeleniumError(true, err)
 		return
 	}
 
-	service := gceservices.NewService(selenium, true)
-	service.RunServiceCheck()
+	s.gceService.RunServiceCheck(true)
+	s.gceService.RunServiceCheck(false)
 
-	service = gceservices.NewService(selenium, false)
-	service.RunServiceCheck()
-
-	cutoff := cutofftimes.NewService(s.cutoffStore, selenium, true)
-	cutoff.DoCheck()
-
-	cutoff = cutofftimes.NewService(s.cutoffStore, selenium, false)
-	cutoff.DoCheck()
+	s.cutofftimes.DoCheck(true)
+	s.cutofftimes.DoCheck(false)
 
 }
 
