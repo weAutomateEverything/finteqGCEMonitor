@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: gce-monitor
+  name: gce-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gce-monitor
+  template:
+    metadata:
+      labels:
+        app: gce-monitor
+    spec:
+      containers:
+      - image: zamedic/gce-monitor:1.82.1
+        name: gce-monitor
+        ports:
+        - containerPort: 8001
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: hal-config
+        - configMapRef:
+            name: gce-config
+        - secretRef:
+            name: hal-secrets
+        - secretRef:
+            name: gce-secrets
+        env:
+        - name: MONGO_DATABASE
+          value:

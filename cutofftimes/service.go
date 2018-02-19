@@ -11,6 +11,10 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"github.com/zamedic/go2hal/remoteTelegramCommands"
+	"time"
+	"github.com/zamedic/go2hal/alert"
+	"github.com/kyokomi/emoji"
 )
 
 type Service interface {
@@ -19,13 +23,21 @@ type Service interface {
 }
 
 type service struct {
-	store    Store
-	selenium gceSelenium.Service
-	inward   bool
+	store        Store
+	selenium     gceSelenium.Service
+	client       remoteTelegramCommands.RemoteCommandClient
+	alert        alert.Service
+	inward       bool
+	disabled     bool
+	disabledTill time.Time
 }
 
-func NewService(store Store, selenium gceSelenium.Service) Service {
-	return &service{store: store, selenium: selenium}
+func NewService(store Store, selenium gceSelenium.Service, client remoteTelegramCommands.RemoteCommandClient, alert alert.Service) Service {
+	s := &service{store: store, selenium: selenium, client: client, alert: alert}
+	go func() {
+		s.registerRemoteStream()
+	}()
+	return s
 }
 
 var sodOk = map[string]struct{}{"SOD : ACK RECEIVED": {}}
@@ -51,13 +63,23 @@ func (s *service) DoCheck(inward bool) {
 			log.Printf("No records found for service %v, subservice %v", x.service+x.subservice, x.destination)
 		}
 	}
+	if s.disabled {
+		if time.Now().After(s.disabledTill) {
+			s.disabled = false
+			s.alert.SendAlert(emoji.Sprintf(":alarm_clock: - GCE Cut-off times sleep expired. The bot will now be sending alerts for GCE services out of their cut-off times again"))
+		}
+	}
+
 	if len(e) > 0 {
 		b := bytes.Buffer{}
 		for _, s := range e {
 			b.WriteString(s)
 			b.WriteString("\n")
 		}
-		s.selenium.HandleSeleniumError(false, errors.New(b.String()))
+
+		if !s.disabled {
+			s.selenium.HandleSeleniumError(false, errors.New(b.String()))
+		}
 	}
 }
 

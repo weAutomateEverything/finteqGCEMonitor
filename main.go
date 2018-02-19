@@ -18,6 +18,7 @@ import (
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/zamedic/go2hal/remoteTelegramCommands"
 )
 
 func main() {
@@ -32,6 +33,7 @@ func main() {
 	fieldKeys := []string{"method"}
 
 	alert := alert.NewKubernetesAlertProxy("")
+	remoteTelegramService := remoteTelegramCommands.NewRemoteCommandClientService()
 
 	seleniumService := gceSelenium.NewService(alert)
 	seleniumService = gceSelenium.NewInstrumentService(kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
@@ -74,7 +76,7 @@ func main() {
 		}, fieldKeys), gceService)
 
 	cutoffStore := cutofftimes.NewMongoStore(db)
-	cutoffService := cutofftimes.NewService(cutoffStore, seleniumService)
+	cutoffService := cutofftimes.NewService(cutoffStore, seleniumService, remoteTelegramService, alert)
 	cutoffService = cutofftimes.NewInstrumentService(kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
 		Namespace: "api",
 		Subsystem: "cutoffService",
