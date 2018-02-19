@@ -11,11 +11,8 @@ import (
 
 func (s *service) registerRemoteStream() {
 	for {
-		name := "DisableGCECuttoffInward"
-		if s.inward{
-			name = "DisableGCECuttoffOutward"
-		}
-		request := remoteTelegramCommands.RemoteCommandRequest{Description: "Disable GCE Cutoff time checl", Name: name}
+
+		request := remoteTelegramCommands.RemoteCommandRequest{Description: "Disable GCE Cutoff time check", Name: "DisableGCECutoffTimes"}
 		stream, err := s.client.RegisterCommand(context.Background(), &request)
 		if err != nil {
 			log.Println(err)
@@ -46,6 +43,6 @@ func (s *service) monitorForStreamResponse(client remoteTelegramCommands.RemoteC
 			}
 		}
 		s.disabledTill = time.Now().Add(time.Duration(t) * time.Minute)
-		s.alert.SendAlert(emoji.Sprintf(":zzz: smoke tests will now sleep for %v minutes", t))
+		s.alert.SendAlert(emoji.Sprintf(":zzz: GCE service cutt-off time alerts will now sleep for %v minutes", t))
 	}
 }
