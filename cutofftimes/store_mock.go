@@ -6,8 +6,8 @@ package cutofftimes
 // Package mock_cutofftimes is a generated GoMock package.
 
 import (
-gomock "github.com/golang/mock/gomock"
-reflect "reflect"
+	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockStore is a mock of Store interface
@@ -66,4 +66,3 @@ func (m *MockStore) isInStartOfDay(service, subservice string) bool {
 func (mr *MockStoreMockRecorder) isInStartOfDay(service, subservice interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "isInStartOfDay", reflect.TypeOf((*MockStore)(nil).isInStartOfDay), service, subservice)
 }
-

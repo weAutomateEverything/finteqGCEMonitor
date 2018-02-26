@@ -166,24 +166,24 @@ func (s service) getData() ([]inwardService, error) {
 	})
 
 	if err != nil {
-		return nil, &halSelenium.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{Internal: true, Message: err}
 	}
 
 	elem, err := s.selenium.Driver().FindElement(selenium.ByPartialLinkText, "Service Options")
 	if err != nil {
-		return nil, &halSelenium.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{Internal: true, Message: err}
 
 	}
 
 	err = elem.Click()
 	if err != nil {
-		return nil, &halSelenium.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{Internal: true, Message: err}
 
 	}
 
 	err = s.selenium.WaitForWaitFor()
 	if err != nil {
-		return nil, &halSelenium.SeleniumnError{true, err}
+		return nil, &halSelenium.SeleniumnError{Internal: true, Message: err}
 
 	}
 

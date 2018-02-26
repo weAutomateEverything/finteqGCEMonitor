@@ -1,17 +1,17 @@
 package cutofftimes
 
 import (
-	"testing"
-	"github.com/golang/mock/gomock"
-	"github.com/zamedic/go2hal/alert/mock_alert"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices/mock_gceSelenium"
-	"github.com/zamedic/go2hal/remoteTelegramCommands/mock_remoteTelegramCommands"
-	"github.com/zamedic/go2hal/remoteTelegramCommands"
 	"context"
-	"github.com/zamedic/go2hal/halSelenium/mock_selenium"
-	"github.com/tebeka/selenium"
+	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices/mock_gceSelenium"
+	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
+	"github.com/tebeka/selenium"
+	"github.com/zamedic/go2hal/alert/mock_alert"
 	gomock2 "github.com/zamedic/go2hal/gomock"
+	"github.com/zamedic/go2hal/halSelenium/mock_selenium"
+	"github.com/zamedic/go2hal/remoteTelegramCommands"
+	"github.com/zamedic/go2hal/remoteTelegramCommands/mock_remoteTelegramCommands"
+	"testing"
 )
 
 func TestService_DoCheck(t *testing.T) {
@@ -34,37 +34,37 @@ func TestService_DoCheck(t *testing.T) {
 	mockSelenium.EXPECT().WaitForWaitFor().Times(4)
 
 	mockDriver.EXPECT().Wait(gomock.Any()).Times(4).Return(nil)
-	mockDriver.EXPECT().FindElement(selenium.ByPartialLinkText,"Service Options").Return(mockWebElement,nil)
-	mockDriver.EXPECT().FindElement(selenium.ByPartialLinkText,"INWARD SERVICE OPTIONS").Return(mockWebElement,nil)
-	mockClient.EXPECT().Recv().Return(nil,errors.New("Out of scope for this test"))
+	mockDriver.EXPECT().FindElement(selenium.ByPartialLinkText, "Service Options").Return(mockWebElement, nil)
+	mockDriver.EXPECT().FindElement(selenium.ByPartialLinkText, "INWARD SERVICE OPTIONS").Return(mockWebElement, nil)
+	mockClient.EXPECT().Recv().Return(nil, errors.New("Out of scope for this test"))
 
 	mockWebElement.EXPECT().Click().Times(3).Return(nil)
 
-	mockDriver.EXPECT().FindElement(selenium.ByXPATH,"//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[2]").Times(2).Return(mockWebElement,nil)
-	mockWebElement.EXPECT().Text().Times(2).Return("Service A",nil)
+	mockDriver.EXPECT().FindElement(selenium.ByXPATH, "//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[2]").Times(2).Return(mockWebElement, nil)
+	mockWebElement.EXPECT().Text().Times(2).Return("Service A", nil)
 
 	mockWebElement2 := mock_selenium.NewMockWebElement(ctrl)
-	mockDriver.EXPECT().FindElement(selenium.ByXPATH,"//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[3]").Times(2).Return(mockWebElement2,nil)
-	mockWebElement2.EXPECT().Text().Times(2).Return("SUB SERVICE A",nil)
+	mockDriver.EXPECT().FindElement(selenium.ByXPATH, "//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[3]").Times(2).Return(mockWebElement2, nil)
+	mockWebElement2.EXPECT().Text().Times(2).Return("SUB SERVICE A", nil)
 
 	mockWebElement3 := mock_selenium.NewMockWebElement(ctrl)
-	mockDriver.EXPECT().FindElement(selenium.ByXPATH,"//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[4]").Times(2).Return(mockWebElement3,nil)
-	mockWebElement3.EXPECT().Text().Times(2).Return("DEST A",nil)
+	mockDriver.EXPECT().FindElement(selenium.ByXPATH, "//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[4]").Times(2).Return(mockWebElement3, nil)
+	mockWebElement3.EXPECT().Text().Times(2).Return("DEST A", nil)
 
 	mockWebElement13 := mock_selenium.NewMockWebElement(ctrl)
-	mockDriver.EXPECT().FindElement(selenium.ByXPATH,"//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[13]").Times(2).Return(mockWebElement13,nil)
-	mockWebElement13.EXPECT().Text().Times(2).Return("STATUS",nil)
+	mockDriver.EXPECT().FindElement(selenium.ByXPATH, "//table[@id='TABLEINWARDSERVICES']/tbody/tr[1]/td[13]").Times(2).Return(mockWebElement13, nil)
+	mockWebElement13.EXPECT().Text().Times(2).Return("STATUS", nil)
 
-	mockDriver.EXPECT().FindElement(selenium.ByXPATH,"//table[@id='TABLEINWARDSERVICES']/tbody/tr[2]/td[2]").Times(2).Return(nil,errors.New("Loop Breakout"))
+	mockDriver.EXPECT().FindElement(selenium.ByXPATH, "//table[@id='TABLEINWARDSERVICES']/tbody/tr[2]/td[2]").Times(2).Return(nil, errors.New("Loop Breakout"))
 
-	mockDriver.EXPECT().FindElement(selenium.ByPartialLinkText,"2").Return(mockWebElement,nil)
+	mockDriver.EXPECT().FindElement(selenium.ByPartialLinkText, "2").Return(mockWebElement, nil)
 
-	mockStore.EXPECT().cutoffExists("Service ASUB SERVICE A","DEST A").Times(2).Return(true)
-	mockStore.EXPECT().isInStartOfDay("Service ASUB SERVICE A","DEST A").Times(2).Return(true)
+	mockStore.EXPECT().cutoffExists("Service ASUB SERVICE A", "DEST A").Times(2).Return(true)
+	mockStore.EXPECT().isInStartOfDay("Service ASUB SERVICE A", "DEST A").Times(2).Return(true)
 
-	mockSelenium.EXPECT().HandleSeleniumError(false,gomock2.ErrorMsgMatches(errors.New("invalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\ninvalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\n")))
+	mockSelenium.EXPECT().HandleSeleniumError(false, gomock2.ErrorMsgMatches(errors.New("invalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\ninvalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\n")))
 
-	s := NewService(mockStore,mockSelenium,mockRemoteCommand,mockAlert)
+	s := NewService(mockStore, mockSelenium, mockRemoteCommand, mockAlert)
 
 	s.DoCheck(true)
 
