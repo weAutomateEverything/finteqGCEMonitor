@@ -64,8 +64,8 @@ func (s *service) doCheck() {
 	s.gceService.RunServiceCheck(true)
 	s.gceService.RunServiceCheck(false)
 
-	s.cutofftimes.DoCheck(true)
-	s.cutofftimes.DoCheck(false)
+	//s.cutofftimes.DoCheck(true)
+	//s.cutofftimes.DoCheck(false)
 
 }
 
