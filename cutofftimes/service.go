@@ -6,15 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
+	"github.com/kyokomi/emoji"
 	"github.com/tebeka/selenium"
+	"github.com/zamedic/go2hal/alert"
 	"github.com/zamedic/go2hal/halSelenium"
+	"github.com/zamedic/go2hal/remoteTelegramCommands"
 	"log"
 	"strconv"
 	"strings"
-	"github.com/zamedic/go2hal/remoteTelegramCommands"
 	"time"
-	"github.com/zamedic/go2hal/alert"
-	"github.com/kyokomi/emoji"
 )
 
 type Service interface {
@@ -36,6 +36,7 @@ func NewService(store Store, selenium gceSelenium.Service, client remoteTelegram
 	s := &service{store: store, selenium: selenium, client: client, alert: alert}
 	go func() {
 		s.registerRemoteStream()
+		s.registerTriggerGCECheckStream()
 	}()
 	return s
 }
