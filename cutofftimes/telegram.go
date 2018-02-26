@@ -47,7 +47,7 @@ func (s *service) monitorForStreamResponse(client remoteTelegramCommands.RemoteC
 	}
 }
 
-func (s *service) registerTriggerGCECheckStream(){
+func (s *service) registerTriggerGCECheckStream() {
 	for {
 
 		request := remoteTelegramCommands.RemoteCommandRequest{Description: "Trigger GCE Cutofftime check", Name: "GCECutofftimes"}
