@@ -2,10 +2,10 @@ package gceservices
 
 import (
 	"fmt"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
 	"github.com/pkg/errors"
 	"github.com/tebeka/selenium"
-	"github.com/zamedic/go2hal/halSelenium"
+	"github.com/weAutomateEverything/finteqGCEMonitor/gceSelenium"
+	"github.com/weAutomateEverything/go2hal/halSelenium"
 	"log"
 	"strings"
 )
@@ -90,19 +90,19 @@ func (s *service) checkServices() error {
 		return elem.IsDisplayed()
 	})
 	if err != nil {
-		return &halSelenium.SeleniumnError{Internal:true, Message:err}
+		return &halSelenium.SeleniumnError{Internal: true, Message: err}
 	}
 
 	elems, err := driver.FindElements(selenium.ByClassName, "ErrorTreeView")
 	if err != nil {
-		return &halSelenium.SeleniumnError{Internal:true, Message:err}
+		return &halSelenium.SeleniumnError{Internal: true, Message: err}
 	}
 
 	//Expand the first level of trees
 	for _, elem = range elems {
 		id, err := elem.GetAttribute("id")
 		if err != nil {
-			return &halSelenium.SeleniumnError{Internal:true, Message:err}
+			return &halSelenium.SeleniumnError{Internal: true, Message: err}
 		}
 		if strings.Index(id, "^") > 0 {
 			continue
@@ -111,18 +111,18 @@ func (s *service) checkServices() error {
 
 		elem, err = driver.FindElement(selenium.ByID, id)
 		if err != nil {
-			return &halSelenium.SeleniumnError{Internal:true, Message:err}
+			return &halSelenium.SeleniumnError{Internal: true, Message: err}
 		}
 
 		displayed, err := elem.IsDisplayed()
 		if err != nil {
-			return &halSelenium.SeleniumnError{Internal:true, Message:err}
+			return &halSelenium.SeleniumnError{Internal: true, Message: err}
 		}
 
 		if displayed {
 			err = elem.Click()
 			if err != nil {
-				return &halSelenium.SeleniumnError{Internal:true, Message:err}
+				return &halSelenium.SeleniumnError{Internal: true, Message: err}
 			}
 		}
 	}
@@ -130,13 +130,13 @@ func (s *service) checkServices() error {
 	//Expand the Second Level of Trees
 	elems, err = driver.FindElements(selenium.ByClassName, "ErrorTreeView")
 	if err != nil {
-		return &halSelenium.SeleniumnError{Internal:true, Message:err}
+		return &halSelenium.SeleniumnError{Internal: true, Message: err}
 	}
 
 	for _, elem = range elems {
 		id, err := elem.GetAttribute("id")
 		if err != nil {
-			return &halSelenium.SeleniumnError{Internal:true, Message:err}
+			return &halSelenium.SeleniumnError{Internal: true, Message: err}
 		}
 
 		if strings.Index(id, "^") > 0 {
@@ -145,16 +145,16 @@ func (s *service) checkServices() error {
 
 			elem, err = driver.FindElement(selenium.ByID, id)
 			if err != nil {
-				return &halSelenium.SeleniumnError{Internal:true, Message:err}
+				return &halSelenium.SeleniumnError{Internal: true, Message: err}
 			}
 			displayed, err := elem.IsDisplayed()
 			if err != nil {
-				return &halSelenium.SeleniumnError{Internal:true, Message:err}
+				return &halSelenium.SeleniumnError{Internal: true, Message: err}
 			}
 			if displayed {
 				err = elem.Click()
 				if err != nil {
-					return &halSelenium.SeleniumnError{Internal:true, Message:err}
+					return &halSelenium.SeleniumnError{Internal: true, Message: err}
 				}
 			} else {
 				log.Printf("%v is not displayed", id)
@@ -167,7 +167,7 @@ func (s *service) checkServices() error {
 
 	elems, err = driver.FindElements(selenium.ByCSSSelector, "TD.ErrorTreeView > A.TreeviewText")
 	if err != nil {
-		return &halSelenium.SeleniumnError{Internal:true, Message:err}
+		return &halSelenium.SeleniumnError{Internal: true, Message: err}
 	}
 
 	for _, elem = range elems {

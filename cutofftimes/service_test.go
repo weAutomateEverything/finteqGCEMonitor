@@ -2,22 +2,22 @@ package cutofftimes
 
 import (
 	"context"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices/mock_gceSelenium"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/tebeka/selenium"
-	"github.com/zamedic/go2hal/alert/mock_alert"
-	gomock2 "github.com/zamedic/go2hal/gomock"
-	"github.com/zamedic/go2hal/halSelenium/mock_selenium"
-	"github.com/zamedic/go2hal/remoteTelegramCommands"
-	"github.com/zamedic/go2hal/remoteTelegramCommands/mock_remoteTelegramCommands"
+	"github.com/weAutomateEverything/finteqGCEMonitor/gceservices/mock_gceSelenium"
+	"github.com/weAutomateEverything/go2hal/alert"
+	"github.com/weAutomateEverything/go2hal/halSelenium/mock_selenium"
+	"github.com/weAutomateEverything/go2hal/halmock"
+	"github.com/weAutomateEverything/go2hal/remoteTelegramCommands"
+	"github.com/weAutomateEverything/go2hal/remoteTelegramCommands/mock_remoteTelegramCommands"
 	"testing"
 )
 
 func TestService_DoCheck(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	mockAlert := mock_alert.NewMockService(ctrl)
+	mockAlert := alert.NewMockService(ctrl)
 	mockSelenium := mock_gceSelenium.NewMockService(ctrl)
 	mockStore := NewMockStore(ctrl)
 
@@ -62,7 +62,7 @@ func TestService_DoCheck(t *testing.T) {
 	mockStore.EXPECT().cutoffExists("Service ASUB SERVICE A", "DEST A").Times(2).Return(true)
 	mockStore.EXPECT().isInStartOfDay("Service ASUB SERVICE A", "DEST A").Times(2).Return(true)
 
-	mockSelenium.EXPECT().HandleSeleniumError(false, gomock2.ErrorMsgMatches(errors.New("invalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\ninvalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\n")))
+	mockSelenium.EXPECT().HandleSeleniumError(false, halmock.ErrorMsgMatches(errors.New("invalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\ninvalid status for service Service ASUB SERVICE A, sub service DEST A, status STATUS\n")))
 
 	s := NewService(mockStore, mockSelenium, mockRemoteCommand, mockAlert)
 

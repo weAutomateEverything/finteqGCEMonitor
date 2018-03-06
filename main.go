@@ -2,23 +2,23 @@ package main
 
 import (
 	"fmt"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/cutofftimes"
-	monitor2 "github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/monitor"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
-	"github.com/zamedic/go2hal/alert"
-	"github.com/zamedic/go2hal/database"
+	"github.com/weAutomateEverything/finteqGCEMonitor/cutofftimes"
+	monitor2 "github.com/weAutomateEverything/finteqGCEMonitor/monitor"
+	"github.com/weAutomateEverything/go2hal/alert"
+	"github.com/weAutomateEverything/go2hal/database"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/zamedic/go2hal/remoteTelegramCommands"
+	"github.com/weAutomateEverything/finteqGCEMonitor/gceSelenium"
+	"github.com/weAutomateEverything/finteqGCEMonitor/gceservices"
+	"github.com/weAutomateEverything/go2hal/remoteTelegramCommands"
 )
 
 func main() {

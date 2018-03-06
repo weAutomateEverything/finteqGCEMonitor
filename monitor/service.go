@@ -1,10 +1,11 @@
 package monitor
 
 import (
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/cutofftimes"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceservices"
-	"github.com/zamedic/go2hal/alert"
+	"github.com/weAutomateEverything/finteqGCEMonitor/cutofftimes"
+	"github.com/weAutomateEverything/finteqGCEMonitor/gceSelenium"
+	"github.com/weAutomateEverything/finteqGCEMonitor/gceservices"
+	"github.com/weAutomateEverything/go2hal/alert"
+	"golang.org/x/net/context"
 	"os"
 	"time"
 )
@@ -43,7 +44,7 @@ func (s *service) doCheck() {
 
 	err := s.selenium.NewClient()
 	if err != nil {
-		s.alert.SendError(err)
+		s.alert.SendError(context.TODO(), err)
 		return
 	}
 	defer s.selenium.Driver().Quit()

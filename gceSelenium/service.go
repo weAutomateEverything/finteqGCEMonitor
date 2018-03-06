@@ -2,8 +2,8 @@ package gceSelenium
 
 import (
 	"github.com/tebeka/selenium"
-	"github.com/zamedic/go2hal/alert"
-	"github.com/zamedic/go2hal/halSelenium"
+	"github.com/weAutomateEverything/go2hal/alert"
+	"github.com/weAutomateEverything/go2hal/halSelenium"
 	"os"
 )
 

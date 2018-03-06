@@ -3,7 +3,7 @@ package cutofftimes
 import (
 	"context"
 	"github.com/kyokomi/emoji"
-	"github.com/zamedic/go2hal/remoteTelegramCommands"
+	"github.com/weAutomateEverything/go2hal/remoteTelegramCommands"
 	"log"
 	"strconv"
 	"time"
@@ -43,7 +43,7 @@ func (s *service) monitorForStreamResponse(client remoteTelegramCommands.RemoteC
 			}
 		}
 		s.disabledTill = time.Now().Add(time.Duration(t) * time.Minute)
-		s.alert.SendAlert(emoji.Sprintf(":zzz: GCE service cutt-off time alerts will now sleep for %v minutes", t))
+		s.alert.SendAlert(context.TODO(), emoji.Sprintf(":zzz: GCE service cutt-off time alerts will now sleep for %v minutes", t))
 	}
 }
 

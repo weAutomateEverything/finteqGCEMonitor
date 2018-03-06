@@ -5,12 +5,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/CardFrontendDevopsTeam/FinteqGCEMonitor/gceSelenium"
 	"github.com/kyokomi/emoji"
 	"github.com/tebeka/selenium"
-	"github.com/zamedic/go2hal/alert"
-	"github.com/zamedic/go2hal/halSelenium"
-	"github.com/zamedic/go2hal/remoteTelegramCommands"
+	"github.com/weAutomateEverything/finteqGCEMonitor/gceSelenium"
+	"github.com/weAutomateEverything/go2hal/alert"
+	"github.com/weAutomateEverything/go2hal/halSelenium"
+	"github.com/weAutomateEverything/go2hal/remoteTelegramCommands"
+	"golang.org/x/net/context"
 	"log"
 	"strconv"
 	"strings"
@@ -67,7 +68,7 @@ func (s *service) DoCheck(inward bool) {
 	if s.disabled {
 		if time.Now().After(s.disabledTill) {
 			s.disabled = false
-			s.alert.SendAlert(emoji.Sprintf(":alarm_clock: - GCE Cut-off times sleep expired. The bot will now be sending alerts for GCE services out of their cut-off times again"))
+			s.alert.SendAlert(context.TODO(), emoji.Sprintf(":alarm_clock: - GCE Cut-off times sleep expired. The bot will now be sending alerts for GCE services out of their cut-off times again"))
 		}
 	}
 
